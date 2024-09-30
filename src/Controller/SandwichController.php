@@ -9,7 +9,7 @@ use Symfony\Component\Routing\Attribute\Route;
 
 class SandwichController extends AbstractController
 {
-    #[Route('/sandwich', name: 'app_sandwich')]
+    #[Route('/api/sandwich', name: 'app_sandwich')]
     public function index(SandwichRepository $sandwichRepository): Response
     {
 
@@ -18,4 +18,6 @@ class SandwichController extends AbstractController
         return $this->json($sandwiches, 200, [], ['groups' => ['sandwichesjson']]);
 
     }
+
+
 }
