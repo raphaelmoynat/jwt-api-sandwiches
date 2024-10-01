@@ -29,9 +29,14 @@ class Sandwich
     /**
      * @var Collection<int, Ingredient>
      */
-    #[ORM\ManyToMany(targetEntity: Ingredient::class, mappedBy: 'sandwiches')]
+    #[ORM\ManyToMany(targetEntity: Ingredient::class, mappedBy: 'sandwiches', cascade: ['persist'])]
     #[Groups("sandwichesjson")]
     private Collection $ingredients;
+
+    #[ORM\ManyToOne(inversedBy: 'sandwiches')]
+    #[ORM\JoinColumn(nullable: false)]
+    #[Groups("sandwichesjson")]
+    private ?User $author = null;
 
     public function __construct()
     {
@@ -80,6 +85,8 @@ class Sandwich
         return $this->ingredients;
     }
 
+
+
     public function addIngredient(Ingredient $ingredient): static
     {
         if (!$this->ingredients->contains($ingredient)) {
@@ -95,6 +102,18 @@ class Sandwich
         if ($this->ingredients->removeElement($ingredient)) {
             $ingredient->removeSandwich($this);
         }
+
+        return $this;
+    }
+
+    public function getAuthor(): ?User
+    {
+        return $this->author;
+    }
+
+    public function setAuthor(?User $author): static
+    {
+        $this->author = $author;
 
         return $this;
     }

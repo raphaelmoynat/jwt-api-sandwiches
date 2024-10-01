@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\UserRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
@@ -18,11 +20,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups("userjson")]
+    #[Groups(["userjson", "sandwichesjson"])]
     private ?int $id = null;
 
     #[ORM\Column(length: 180)]
-    #[Groups("userjson")]
+    #[Groups(["userjson", "sandwichesjson"])]
     private ?string $username = null;
 
     /**
@@ -37,6 +39,17 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      */
     #[ORM\Column]
     private ?string $password = null;
+
+    /**
+     * @var Collection<int, Sandwich>
+     */
+    #[ORM\OneToMany(targetEntity: Sandwich::class, mappedBy: 'author', orphanRemoval: true)]
+    private Collection $sandwiches;
+
+    public function __construct()
+    {
+        $this->sandwiches = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -111,5 +124,35 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         // If you store any temporary, sensitive data on the user, clear it here
         // $this->plainPassword = null;
+    }
+
+    /**
+     * @return Collection<int, Sandwich>
+     */
+    public function getSandwiches(): Collection
+    {
+        return $this->sandwiches;
+    }
+
+    public function addSandwich(Sandwich $sandwich): static
+    {
+        if (!$this->sandwiches->contains($sandwich)) {
+            $this->sandwiches->add($sandwich);
+            $sandwich->setAuthor($this);
+        }
+
+        return $this;
+    }
+
+    public function removeSandwich(Sandwich $sandwich): static
+    {
+        if ($this->sandwiches->removeElement($sandwich)) {
+            // set the owning side to null (unless already changed)
+            if ($sandwich->getAuthor() === $this) {
+                $sandwich->setAuthor(null);
+            }
+        }
+
+        return $this;
     }
 }
